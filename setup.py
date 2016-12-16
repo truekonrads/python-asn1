@@ -1,45 +1,75 @@
-#
-# This file is part of Python-ASN1. Python-ASN1 is free software that is
-# made available under the MIT license. Consult the file "LICENSE" that
-# is distributed together with this file for the exact licensing terms.
-#
-# Python-ASN1 is copyright (c) 2007 by the Python-ASN1 authors. See the
-# file "AUTHORS" for a complete overview.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import print_function
 
-import sys
+import io
+import re
+from glob import glob
+from os.path import basename
+from os.path import dirname
+from os.path import join
+from os.path import splitext
 
-# Support both setuptools (if installed) and distutils
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from setuptools import find_packages
+from setuptools import setup
 
-classifiers = \
-[
-    'Development Status :: 4 - Beta',
-    'Environment :: Plugins',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
-    'Operating System :: Microsoft :: Windows',
-    'Operating System :: POSIX',
-    'Programming Language :: Python',
-    'Topic :: Internet',
-    'Topic :: Software Development :: Libraries :: Python Modules'
-]
 
-args = \
-{
-    'name': 'python-asn1',
-    'version': '0.9',
-    'description': 'An ASN1 encoder/decoder for Python',
-    'author': 'Geert Jansen',
-    'author_email': 'geert@boskant.nl',
-    'url': 'http://www.boskant.nl/trac/python-asn1',
-    'package_dir': {'': 'lib'},
-    'py_modules': ['asn1']
-}
+def read(*names, **kwargs):
+    return io.open(
+        join(dirname(__file__), *names),
+        encoding=kwargs.get('encoding', 'utf8')
+    ).read()
 
-if sys.version_info[:3] >= (2, 4, 0):
-    args['classifiers'] = classifiers
 
-setup(**args)
+setup(
+    name='asn1',
+    version='2.0.0',
+    license='BSD',
+    description='Python-ASN1 is a simple ASN.1 encoder and decoder for Python 2.6+ and 3.3+.',
+    long_description='%s\n%s' % (
+        re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
+        re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
+    ),
+    author='Sebastien Andrivet',
+    author_email='sebastien@andrivet.com',
+    url='https://github.com/andrivet/python-asn1',
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
+    include_package_data=True,
+    zip_safe=False,
+    classifiers=[
+        # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: Unix',
+        'Operating System :: POSIX',
+        'Operating System :: Microsoft :: Windows',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        # uncomment if you test on these interpreters:
+        # 'Programming Language :: Python :: Implementation :: IronPython',
+        # 'Programming Language :: Python :: Implementation :: Jython',
+        # 'Programming Language :: Python :: Implementation :: Stackless',
+        'Topic :: Utilities',
+    ],
+    keywords=[
+        # eg: 'keyword1', 'keyword2', 'keyword3',
+    ],
+    install_requires=[
+        # eg: 'aspectlib==1.1.1', 'six>=1.7',
+    ],
+    extras_require={
+        # eg:
+        #   'rst': ['docutils>=0.11'],
+        #   ':python_version=="2.6"': ['argparse'],
+    },
+)
