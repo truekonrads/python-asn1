@@ -137,7 +137,7 @@ License
 =======
 
 Python-ASN1 is free software that is made available under the MIT license.
-Consult the file :doc:`LICENSE <license>` that is distributed together with this file for
+Consult the file LICENSE that is distributed together with this file for
 the exact licensing terms.
 
 Copyright
