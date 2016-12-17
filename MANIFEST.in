@@ -9,7 +9,6 @@ include .coveragerc
 include .cookiecutterrc
 include .editorconfig
 include .isort.cfg
-include .python-version
 
 include AUTHORS.rst
 include CHANGELOG.rst
@@ -22,3 +21,4 @@ include *.txt
 include tox.ini .travis.yml appveyor.yml
 
 global-exclude *.py[cod] __pycache__ *.so *.dylib
+exclude .python-version
