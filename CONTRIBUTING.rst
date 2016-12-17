@@ -35,7 +35,7 @@ If you are proposing a feature:
 Development
 ===========
 
-To set up `python-asn1` for local development:
+To set up Python-ASN1 for local development:
 
 1. Fork `python-asn1 <https://github.com/andrivet/python-asn1>`_
    (look for the "Fork" button).

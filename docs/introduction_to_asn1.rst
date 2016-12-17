@@ -35,6 +35,9 @@ ONC-RPC applications such as NFS (the Network File System). EBNF is perhaps
 the most used standard of them all: HTTP and XML (and thereby all its
 applications) are specified in EBNF.
 
+ASN.1 Data Types or Tags
+------------------------
+
 ASN.1 data types are either primitive data types
 such as integers and strings, or more complex ones built on them. Whatever
 the details of the data type, each of them has the following properties.
@@ -59,8 +62,12 @@ the details of the data type, each of them has the following properties.
 The three properties together (number, class, type) are also called the
 **tag** of a data type.
 
+ASN.1 Encoding
+--------------
+
 As mentioned above, the encoding of data structures is defined by ASN.1
 encoding rules. The most well-known encodings rules are:
+
 * **BER** (Basic Encoding Rules)
 * **DER** (Distinguished Encoding Rules)
 
@@ -86,6 +93,15 @@ although this is not a term that is defined in the ASN.1 standard. For each
 data type, DER and BER define how to encode the tag (which we remember is a
 combination of its number, class and type), the length (in octets) of the
 data value, and the data value itself.
+
+Because DER encoding results in a truly binary representation of the encoded
+data, a format has been devised for being able to send these in an encoding of
+printable characters so you can actually mail these things.
+
+* **PEM** (Privacy Enhanced Mail) defined in RFC 1421.
+  In essence PEM files are just base64 encoded versions of the DER encoded data.
+  In order to distinguish from the outside what kind of data is inside the DER
+  encoded string, a header and footer are present around the data.
 
 References
 ----------

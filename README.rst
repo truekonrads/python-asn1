@@ -1,6 +1,6 @@
 .. start-badges
 
-|travis| |appveyor| |requires| |codecov| |coveralls| |docs| |version| |downloads| |wheel| |supported-versions| |supported-implementations|
+|travis| |appveyor| |requires| |codecov| |coveralls| |docs| |version| |wheel| |supported-versions| |supported-implementations|
 
 .. |docs| image:: https://readthedocs.org/projects/python-asn1/badge/?style=flat
     :target: https://readthedocs.org/projects/python-asn1
@@ -28,10 +28,6 @@
 
 .. |version| image:: https://img.shields.io/pypi/v/asn1.svg?style=flat
     :alt: PyPI Package latest release
-    :target: https://pypi.python.org/pypi/asn1
-
-.. |downloads| image:: https://img.shields.io/pypi/dm/asn1.svg?style=flat
-    :alt: PyPI Package monthly downloads
     :target: https://pypi.python.org/pypi/asn1
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/asn1.svg?style=flat
@@ -94,7 +90,9 @@ You can also simply include ``asn1.py`` into your project.
 How to use Python-asn1
 ======================
 
-***Note**: You can find an example in the ``examples`` directory in the repository.*
+.. note:: You can find more detailed documentation on the `Usage`_ page.
+
+.. _Usage: usage.html
 
 Encoding
 --------
@@ -137,7 +135,7 @@ License
 =======
 
 Python-ASN1 is free software that is made available under the MIT license.
-Consult the file LICENSE that is distributed together with this file for
+Consult the file LICENSE that is distributed together with this library for
 the exact licensing terms.
 
 Copyright

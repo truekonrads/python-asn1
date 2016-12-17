@@ -7,6 +7,10 @@
 # Python-ASN1 is copyright (c) 2007-2016 by the Python-ASN1 authors. See the
 # file "AUTHORS" for a complete overview.
 
+"""
+This module provides ASN.1 encoder and decoder.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -47,25 +51,45 @@ ClassPrivate = 0xc0
 
 
 Tag = collections.namedtuple('Tag', 'nr typ cls')
+"""A named tuple to represent ASN.1 tags as returned by `Decoder.peek()` and
+`Decoder.read()`."""
 
 
 class Error(Exception):
-    """ASN1 error"""
+    """ASN.11 encoding or decoding error."""
 
 
 class Encoder(object):
-    """A ASN.1 encoder. Uses DER encoding."""
+    """ASN.1 encoder. Uses DER encoding.
+    """
 
     def __init__(self):
         """Constructor."""
         self.m_stack = None
 
     def start(self):
-        """Start encoding."""
+        """This method instructs the encoder to start encoding a new ASN.1
+        output. This method may be called at any time to reset the encoder,
+        and resets the current output (if any).
+        """
         self.m_stack = [[]]
 
     def enter(self, nr, cls=None):
-        """Start a constructed data value."""
+        """This method starts the construction of a constructed type.
+
+        Args:
+            nr (int): The desired ASN.1 type.
+
+            cls (int): This optional parameter specifies the class
+                of the constructed type. The default class to use is the
+                universal class.
+
+        Returns:
+            None
+
+        Raises:
+            `Error`
+        """
         if self.m_stack is None:
             raise Error('Encoder not initialized. Call start() first.')
         if cls is None:
@@ -74,7 +98,9 @@ class Encoder(object):
         self.m_stack.append([])
 
     def leave(self):
-        """Finish a constructed data value."""
+        """This method completes the construction of a constructed type and
+        writes the encoded representation to the output buffer.
+        """
         if self.m_stack is None:
             raise Error('Encoder not initialized. Call start() first.')
         if len(self.m_stack) == 1:
@@ -84,8 +110,40 @@ class Encoder(object):
         self._emit_length(len(value))
         self._emit(value)
 
-    def write(self, value, nr=None, typ=None, cls=None):
-        """Write a primitive data value."""
+    def write(self, value, nr=None, typ=None, cls=None): # type: (int, int, int) -> None
+        """This method encodes one ASN.1 tag and writes it to the output buffer.
+
+        Note:
+            Normally, ``value`` will be the only parameter to this method.
+            In this case Python-ASN1 will autodetect the correct ASN.1 type from
+            the type of ``value``, and will output the encoded value based on this
+            type.
+
+        Args:
+            value (any): The value of the ASN.1 tag to write. Python-ASN1 will
+                try to autodetect the correct ASN.1 type from the type of
+                ``value``.
+
+            nr (int): If the desired ASN.1 type cannot be autodetected or is
+                autodetected wrongly, the ``nr`` parameter can be provided to
+                specify the ASN.1 type to be used.
+
+            typ (int): This optional parameter can be used to write constructed
+                types to the output by setting it to indicate the constructed
+                encoding type. In this case, ``value`` must already be valid ASN.1
+                encoded data as plain Python bytes. This is not normally how
+                constructed types should be encoded though, see `Encoder.enter()`
+                and `Encoder.leave()` for the recommended way of doing this.
+
+            cls (int): This parameter can be used to override the class of the
+                ``value``. The default class is the universal class.
+
+        Returns:
+            None
+
+        Raises:
+            `Error`
+        """
         if self.m_stack is None:
             raise Error('Encoder not initialized. Call start() first.')
         if nr is None:
@@ -105,7 +163,22 @@ class Encoder(object):
         self._emit(value)
 
     def output(self):
-        """Return the encoded output."""
+        """This method returns the encoded ASN.1 data as plain Python ``bytes``.
+        This method can be called multiple times, also during encoding.
+        In the latter case the data that has been encoded so far is
+        returned.
+
+        Note:
+            It is an error to call this method if the encoder is still
+            constructing a constructed type, i.e. if `Encoder.enter()` has been
+            called more times that `Encoder.leave()`.
+
+        Returns:
+            bytes: The DER encoded ASN.1 data.
+
+        Raises:
+            `Error`
+        """
         if self.m_stack is None:
             raise Error('Encoder not initialized. Call start() first.')
         if len(self.m_stack) != 1:
@@ -253,7 +326,7 @@ class Encoder(object):
 
 
 class Decoder(object):
-    """A ASN.1 decoder. Understands BER (and DER which is a subset)."""
+    """ASN.1 decoder. Understands BER (and DER which is a subset)."""
 
     def __init__(self):
         """Constructor."""
@@ -261,14 +334,52 @@ class Decoder(object):
         self.m_tag = None
 
     def start(self, data):
-        """Start processing 'data'."""
+        """This method instructs the decoder to start decoding the ASN.1 input
+        ``data``, which must be a passed in as plain Python bytes.
+        This method may be called at any time to start a new decoding job.
+        If this method is called while currently decoding another input, that
+        decoding context is discarded.
+
+        Note:
+            It is not necessary to specify the encoding because the decoder
+            assumes the input is in BER or DER format.
+
+        Args:
+            data (bytes): ASN.1 input, in BER or DER format, to be decoded.
+
+        Returns:
+            None
+
+        Raises:
+            `Error`
+        """
         if not isinstance(data, bytes):
             raise Error('Expecting bytes instance.')
         self.m_stack = [[0, bytes(data)]]
         self.m_tag = None
 
     def peek(self):
-        """Return the value of the next tag without moving to the next TLV record."""
+        """This method returns the current ASN.1 tag (i.e. the tag that a
+        subsequent `Decoder.read()` call would return) without updating the
+        decoding offset. In case no more data is available from the input,
+        this method returns ``None`` to signal end-of-file.
+
+        This method is useful if you don't know whether the next tag will be a
+        primitive or a constructed tag. Depending on the return value of `peek`,
+        you would decide to either issue a `Decoder.read()` in case of a primitive
+        type, or an `Decoder.enter()` in case of a constructed type.
+
+        Note:
+            Because this method does not advance the current offset in the input,
+            calling it multiple times in a row will return the same value for all
+            calls.
+
+        Returns:
+            `Tag`: The current ASN.1 tag.
+
+        Raises:
+            `Error`
+        """
         if self.m_stack is None:
             raise Error('No input selected. Call start() first.')
         if self._end_of_input():
@@ -278,7 +389,19 @@ class Decoder(object):
         return self.m_tag
 
     def read(self):
-        """Read a simple value and move to the next TLV record."""
+        """This method decodes one ASN.1 tag from the input and returns it as a
+        ``(tag, value)`` tuple. ``tag`` is a 3-tuple ``(nr, typ, cls)``,
+        while ``value`` is a Python object representing the ASN.1 value.
+        The offset in the input is increased so that the next `Decoder.read()`
+        call will return the next tag. In case no more data is available from
+        the input, this method returns ``None`` to signal end-of-file.
+
+        Returns:
+            `Tag`, value: The current ASN.1 tag and its value.
+
+        Raises:
+            `Error`
+        """
         if self.m_stack is None:
             raise Error('No input selected. Call start() first.')
         if self._end_of_input():
@@ -290,11 +413,24 @@ class Decoder(object):
         return tag, value
 
     def eof(self):
-        """Return True if we are end of input."""
+        """Return True if we are at the end of input.
+
+        Returns:
+            bool: True if all input has been decoded, and False otherwise.
+        """
         return self._end_of_input()
 
     def enter(self):
-        """Enter a constructed tag."""
+        """This method enters the constructed type that is at the current
+        decoding offset.
+
+        Note:
+            It is an error to call `Decoder.enter()` if the to be decoded ASN.1 tag
+            is not of a constructed type.
+
+        Returns:
+            None
+        """
         if self.m_stack is None:
             raise Error('No input selected. Call start() first.')
         tag = self.peek()
@@ -306,7 +442,16 @@ class Decoder(object):
         self.m_tag = None
 
     def leave(self):
-        """Leave the last entered constructed tag."""
+        """This method leaves the last constructed type that was
+        `Decoder.enter()`-ed.
+
+        Note:
+            It is an error to call `Decoder.leave()` if the current ASN.1 tag
+            is not of a constructed type.
+
+        Returns:
+            None
+        """
         if self.m_stack is None:
             raise Error('No input selected. Call start() first.')
         if len(self.m_stack) == 1:
@@ -378,7 +523,7 @@ class Decoder(object):
         return byte
 
     def _read_bytes(self, count):
-        """Return the next `count' bytes of input. Raise error on
+        """Return the next ``count`` bytes of input. Raise error on
         end-of-input."""
         index, input_data = self.m_stack[-1]
         bytes_data = input_data[index:index + count]

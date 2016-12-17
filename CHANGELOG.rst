@@ -2,7 +2,7 @@
 Changelog
 =========
 
-2.0.0b1 (2016-12-15)
+2.0.0 (2016-12-17)
 -----------------------------------------
 
 * First public release by Sebastien Andrivet
