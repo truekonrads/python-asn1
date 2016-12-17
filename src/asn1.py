@@ -21,34 +21,45 @@ from builtins import bytes
 from builtins import int
 from builtins import range
 from builtins import str
+from future.utils import native_str
 
 
 __version__ = "2.0.0"
 
 
-Boolean = 0x01
-Integer = 0x02
-BitString = 0x03
-OctetString = 0x04
-Null = 0x05
-ObjectIdentifier = 0x06
-Enumerated = 0x0a
-UTF8String = 0x0c
-Sequence = 0x10
-Set = 0x11
-PrintableString = 0x13
-IA5String = 0x16
-UTCTime = 0x17
-UnicodeString = 0x1e
+# Simulate Enum for both Python 2.7 and 3
+def enum(**enums):
+    return type(native_str('Enum'), (), enums)
 
-TypeConstructed = 0x20
-TypePrimitive = 0x00
 
-ClassUniversal = 0x00
-ClassApplication = 0x40
-ClassContext = 0x80
-ClassPrivate = 0xc0
+Numbers = enum(
+    Boolean=0x01,
+    Integer=0x02,
+    BitString=0x03,
+    OctetString=0x04,
+    Null=0x05,
+    ObjectIdentifier=0x06,
+    Enumerated=0x0a,
+    UTF8String=0x0c,
+    Sequence=0x10,
+    Set=0x11,
+    PrintableString=0x13,
+    IA5String=0x16,
+    UTCTime=0x17,
+    UnicodeString=0x1e
+)
 
+Types = enum(
+    Constructed=0x20,
+    Primitive=0x00
+)
+
+Classes = enum(
+    Universal=0x00,
+    Application=0x40,
+    Context=0x80,
+    Private=0xc0
+)
 
 Tag = collections.namedtuple('Tag', 'nr typ cls')
 """A named tuple to represent ASN.1 tags as returned by `Decoder.peek()` and
@@ -78,11 +89,11 @@ class Encoder(object):
         """This method starts the construction of a constructed type.
 
         Args:
-            nr (int): The desired ASN.1 type.
+            nr (int): The desired ASN.1 type. Use ``Numbers`` enumeration.
 
             cls (int): This optional parameter specifies the class
                 of the constructed type. The default class to use is the
-                universal class.
+                universal class. Use ``Classes`` enumeration.
 
         Returns:
             None
@@ -93,8 +104,8 @@ class Encoder(object):
         if self.m_stack is None:
             raise Error('Encoder not initialized. Call start() first.')
         if cls is None:
-            cls = ClassUniversal
-        self._emit_tag(nr, TypeConstructed, cls)
+            cls = Classes.Universal
+        self._emit_tag(nr, Types.Constructed, cls)
         self.m_stack.append([])
 
     def leave(self):
@@ -110,7 +121,7 @@ class Encoder(object):
         self._emit_length(len(value))
         self._emit(value)
 
-    def write(self, value, nr=None, typ=None, cls=None): # type: (int, int, int) -> None
+    def write(self, value, nr=None, typ=None, cls=None):  # type: (int, int, int) -> None
         """This method encodes one ASN.1 tag and writes it to the output buffer.
 
         Note:
@@ -126,7 +137,7 @@ class Encoder(object):
 
             nr (int): If the desired ASN.1 type cannot be autodetected or is
                 autodetected wrongly, the ``nr`` parameter can be provided to
-                specify the ASN.1 type to be used.
+                specify the ASN.1 type to be used. Use ``Numbers`` enumeration.
 
             typ (int): This optional parameter can be used to write constructed
                 types to the output by setting it to indicate the constructed
@@ -134,9 +145,11 @@ class Encoder(object):
                 encoded data as plain Python bytes. This is not normally how
                 constructed types should be encoded though, see `Encoder.enter()`
                 and `Encoder.leave()` for the recommended way of doing this.
+                Use ``Types`` enumeration.
 
             cls (int): This parameter can be used to override the class of the
                 ``value``. The default class is the universal class.
+                Use ``Classes`` enumeration.
 
         Returns:
             None
@@ -148,15 +161,15 @@ class Encoder(object):
             raise Error('Encoder not initialized. Call start() first.')
         if nr is None:
             if isinstance(value, int):
-                nr = Integer
+                nr = Numbers.Integer
             elif isinstance(value, str) or isinstance(value, bytes):
-                nr = OctetString
+                nr = Numbers.OctetString
             elif value is None:
-                nr = Null
+                nr = Numbers.Null
         if typ is None:
-            typ = TypePrimitive
+            typ = Types.Primitive
         if cls is None:
-            cls = ClassUniversal
+            cls = Classes.Universal
         value = self._encode_value(nr, value)
         self._emit_tag(nr, typ, cls)
         self._emit_length(len(value))
@@ -244,15 +257,15 @@ class Encoder(object):
 
     def _encode_value(self, nr, value):
         """Encode a value."""
-        if nr in (Integer, Enumerated):
+        if nr in (Numbers.Integer, Numbers.Enumerated):
             value = self._encode_integer(value)
-        elif nr == OctetString or nr == PrintableString:
+        elif nr in (Numbers.OctetString, Numbers.PrintableString):
             value = self._encode_octet_string(value)
-        elif nr == Boolean:
+        elif nr == Numbers.Boolean:
             value = self._encode_boolean(value)
-        elif nr == Null:
+        elif nr == Numbers.Null:
             value = self._encode_null()
-        elif nr == ObjectIdentifier:
+        elif nr == Numbers.ObjectIdentifier:
             value = self._encode_object_identifier(value)
         return value
 
@@ -434,7 +447,7 @@ class Decoder(object):
         if self.m_stack is None:
             raise Error('No input selected. Call start() first.')
         tag = self.peek()
-        if tag.typ != TypeConstructed:
+        if tag.typ != Types.Constructed:
             raise Error('Cannot enter a non-constructed tag.')
         length = self._read_length()
         bytes_data = self._read_bytes(length)
@@ -496,17 +509,17 @@ class Decoder(object):
     def _read_value(self, nr, length):
         """Read a value from the input."""
         bytes_data = self._read_bytes(length)
-        if nr == Boolean:
+        if nr == Numbers.Boolean:
             value = self._decode_boolean(bytes_data)
-        elif nr in (Integer, Enumerated):
+        elif nr in (Numbers.Integer, Numbers.Enumerated):
             value = self._decode_integer(bytes_data)
-        elif nr == OctetString:
+        elif nr == Numbers.OctetString:
             value = self._decode_octet_string(bytes_data)
-        elif nr == Null:
+        elif nr == Numbers.Null:
             value = self._decode_null(bytes_data)
-        elif nr == ObjectIdentifier:
+        elif nr == Numbers.ObjectIdentifier:
             value = self._decode_object_identifier(bytes_data)
-        elif nr == PrintableString or nr == IA5String or nr == UTCTime:
+        elif nr in (Numbers.PrintableString, Numbers.IA5String, Numbers.UTCTime):
             value = self._decode_printable_string(bytes_data)
         else:
             value = bytes_data

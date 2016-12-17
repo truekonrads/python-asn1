@@ -25,7 +25,7 @@ class TestEncoder(object):
     def test_boolean(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write(True, asn1.Boolean)
+        enc.write(True, asn1.Numbers.Boolean)
         res = enc.output()
         assert res == b'\x01\x01\xff'
 
@@ -86,7 +86,7 @@ class TestEncoder(object):
     def test_printable_string(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write(u'foo', nr=asn1.PrintableString)
+        enc.write(u'foo', nr=asn1.Numbers.PrintableString)
         res = enc.output()
         assert res == b'\x13\x03foo'
 
@@ -100,7 +100,7 @@ class TestEncoder(object):
     def test_unicode_printable_string(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write(u'fooé', nr=asn1.PrintableString)
+        enc.write(u'fooé', nr=asn1.Numbers.PrintableString)
         res = enc.output()
         assert res == b'\x13\x05\x66\x6f\x6f\xc3\xa9'
 
@@ -114,43 +114,43 @@ class TestEncoder(object):
     def test_object_identifier(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write('1.2.3', asn1.ObjectIdentifier)
+        enc.write('1.2.3', asn1.Numbers.ObjectIdentifier)
         res = enc.output()
         assert res == b'\x06\x02\x2a\x03'
 
     def test_long_object_identifier(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write('39.2.3', asn1.ObjectIdentifier)
+        enc.write('39.2.3', asn1.Numbers.ObjectIdentifier)
         res = enc.output()
         assert res == b'\x06\x03\x8c\x1a\x03'
         enc.start()
-        enc.write('1.39.3', asn1.ObjectIdentifier)
+        enc.write('1.39.3', asn1.Numbers.ObjectIdentifier)
         res = enc.output()
         assert res == b'\x06\x02\x4f\x03'
         enc.start()
-        enc.write('1.2.300000', asn1.ObjectIdentifier)
+        enc.write('1.2.300000', asn1.Numbers.ObjectIdentifier)
         res = enc.output()
         assert res == b'\x06\x04\x2a\x92\xa7\x60'
 
     def test_real_object_identifier(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write('1.2.840.113554.1.2.1.1', asn1.ObjectIdentifier)
+        enc.write('1.2.840.113554.1.2.1.1', asn1.Numbers.ObjectIdentifier)
         res = enc.output()
         assert res == b'\x06\x0a\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x01'
 
     def test_enumerated(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write(1, asn1.Enumerated)
+        enc.write(1, asn1.Numbers.Enumerated)
         res = enc.output()
         assert res == b'\x0a\x01\x01'
 
     def test_sequence(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(asn1.Sequence)
+        enc.enter(asn1.Numbers.Sequence)
         enc.write(1)
         enc.write(b'foo')
         enc.leave()
@@ -160,7 +160,7 @@ class TestEncoder(object):
     def test_sequence_of(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(asn1.Sequence)
+        enc.enter(asn1.Numbers.Sequence)
         enc.write(1)
         enc.write(2)
         enc.leave()
@@ -170,7 +170,7 @@ class TestEncoder(object):
     def test_set(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(asn1.Set)
+        enc.enter(asn1.Numbers.Set)
         enc.write(1)
         enc.write(b'foo')
         enc.leave()
@@ -180,7 +180,7 @@ class TestEncoder(object):
     def test_set_of(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(asn1.Set)
+        enc.enter(asn1.Numbers.Set)
         enc.write(1)
         enc.write(2)
         enc.leave()
@@ -190,7 +190,7 @@ class TestEncoder(object):
     def test_context(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(1, asn1.ClassContext)
+        enc.enter(1, asn1.Classes.Context)
         enc.write(1)
         enc.leave()
         res = enc.output()
@@ -199,7 +199,7 @@ class TestEncoder(object):
     def test_application(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(1, asn1.ClassApplication)
+        enc.enter(1, asn1.Classes.Application)
         enc.write(1)
         enc.leave()
         res = enc.output()
@@ -208,7 +208,7 @@ class TestEncoder(object):
     def test_private(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.enter(1, asn1.ClassPrivate)
+        enc.enter(1, asn1.Classes.Private)
         enc.write(1)
         enc.leave()
         res = enc.output()
@@ -232,7 +232,7 @@ class TestEncoder(object):
 
     def test_error_init(self):
         enc = asn1.Encoder()
-        assert_raises(asn1.Error, enc.enter, asn1.Sequence)
+        assert_raises(asn1.Error, enc.enter, asn1.Numbers.Sequence)
         assert_raises(asn1.Error, enc.leave)
         assert_raises(asn1.Error, enc.write, 1)
         assert_raises(asn1.Error, enc.output)
@@ -241,7 +241,7 @@ class TestEncoder(object):
         enc = asn1.Encoder()
         enc.start()
         assert_raises(asn1.Error, enc.leave)
-        enc.enter(asn1.Sequence)
+        enc.enter(asn1.Numbers.Sequence)
         assert_raises(asn1.Error, enc.output)
         enc.leave()
         assert_raises(asn1.Error, enc.leave)
@@ -249,13 +249,13 @@ class TestEncoder(object):
     def test_error_object_identifier(self):
         enc = asn1.Encoder()
         enc.start()
-        assert_raises(asn1.Error, enc.write, '1', asn1.ObjectIdentifier)
-        assert_raises(asn1.Error, enc.write, '40.2.3', asn1.ObjectIdentifier)
-        assert_raises(asn1.Error, enc.write, '1.40.3', asn1.ObjectIdentifier)
-        assert_raises(asn1.Error, enc.write, '1.2.3.', asn1.ObjectIdentifier)
-        assert_raises(asn1.Error, enc.write, '.1.2.3', asn1.ObjectIdentifier)
-        assert_raises(asn1.Error, enc.write, 'foo', asn1.ObjectIdentifier)
-        assert_raises(asn1.Error, enc.write, 'foo.bar', asn1.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, '1', asn1.Numbers.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, '40.2.3', asn1.Numbers.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, '1.40.3', asn1.Numbers.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, '1.2.3.', asn1.Numbers.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, '.1.2.3', asn1.Numbers.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, 'foo', asn1.Numbers.ObjectIdentifier)
+        assert_raises(asn1.Error, enc.write, 'foo.bar', asn1.Numbers.ObjectIdentifier)
 
 
 class TestDecoder(object):
@@ -266,7 +266,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Boolean, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Boolean, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert isinstance(val, int)
         assert val
@@ -286,7 +286,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Integer, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Integer, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert isinstance(val, int)
         assert val == 1
@@ -336,7 +336,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.OctetString, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.OctetString, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert val == b'foo'
 
@@ -345,7 +345,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.PrintableString, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.PrintableString, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert val == u'foo'
 
@@ -354,7 +354,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.PrintableString, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.PrintableString, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert val == u'fooé'
 
@@ -363,7 +363,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Null, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Null, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert val is None
 
@@ -372,8 +372,8 @@ class TestDecoder(object):
         buf = b'\x06\x02\x2a\x03'
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.ObjectIdentifier, asn1.TypePrimitive,
-                       asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.ObjectIdentifier, asn1.Types.Primitive,
+                       asn1.Classes.Universal)
         tag, val = dec.read()
         assert val == u'1.2.3'
 
@@ -404,7 +404,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Enumerated, asn1.TypePrimitive, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Enumerated, asn1.Types.Primitive, asn1.Classes.Universal)
         tag, val = dec.read()
         assert isinstance(val, int)
         assert val == 1
@@ -414,7 +414,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Sequence, asn1.TypeConstructed, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Sequence, asn1.Types.Constructed, asn1.Classes.Universal)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -426,7 +426,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Sequence, asn1.TypeConstructed, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Sequence, asn1.Types.Constructed, asn1.Classes.Universal)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -438,7 +438,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Set, asn1.TypeConstructed, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Set, asn1.Types.Constructed, asn1.Classes.Universal)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -450,7 +450,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (asn1.Set, asn1.TypeConstructed, asn1.ClassUniversal)
+        assert tag == (asn1.Numbers.Set, asn1.Types.Constructed, asn1.Classes.Universal)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -462,7 +462,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (1, asn1.TypeConstructed, asn1.ClassContext)
+        assert tag == (1, asn1.Types.Constructed, asn1.Classes.Context)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -472,7 +472,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (1, asn1.TypeConstructed, asn1.ClassApplication)
+        assert tag == (1, asn1.Types.Constructed, asn1.Classes.Application)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -482,7 +482,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (1, asn1.TypeConstructed, asn1.ClassPrivate)
+        assert tag == (1, asn1.Types.Constructed, asn1.Classes.Private)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
@@ -492,7 +492,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag = dec.peek()
-        assert tag == (0xffff, asn1.TypeConstructed, asn1.ClassUniversal)
+        assert tag == (0xffff, asn1.Types.Constructed, asn1.Classes.Universal)
         dec.enter()
         tag, val = dec.read()
         assert val == 1
