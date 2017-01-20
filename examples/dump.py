@@ -39,25 +39,25 @@ def read_pem(input_file):
 
 
 tag_id_to_string_map = {
-    asn1.Boolean: "BOOLEAN",
-    asn1.Integer: "INTEGER",
-    asn1.BitString: "BIT STRING",
-    asn1.OctetString: "OCTET STRING",
-    asn1.Null: "NULL",
-    asn1.ObjectIdentifier: "OBJECT",
-    asn1.PrintableString: "PRINTABLESTRING",
-    asn1.IA5String: "IA5STRING",
-    asn1.UTCTime: "UTCTIME",
-    asn1.Enumerated: "ENUMERATED",
-    asn1.Sequence: "SEQUENCE",
-    asn1.Set: "SET"
+    asn1.Numbers.Boolean: "BOOLEAN",
+    asn1.Numbers.Integer: "INTEGER",
+    asn1.Numbers.BitString: "BIT STRING",
+    asn1.Numbers.OctetString: "OCTET STRING",
+    asn1.Numbers.Null: "NULL",
+    asn1.Numbers.ObjectIdentifier: "OBJECT",
+    asn1.Numbers.PrintableString: "PRINTABLESTRING",
+    asn1.Numbers.IA5String: "IA5STRING",
+    asn1.Numbers.UTCTime: "UTCTIME",
+    asn1.Numbers.Enumerated: "ENUMERATED",
+    asn1.Numbers.Sequence: "SEQUENCE",
+    asn1.Numbers.Set: "SET"
 }
 
 class_id_to_string_map = {
-    asn1.ClassUniversal: "U",
-    asn1.ClassApplication: "A",
-    asn1.ClassContext: "C",
-    asn1.ClassPrivate: "P"
+    asn1.Classes.Universal: "U",
+    asn1.Classes.Application: "A",
+    asn1.Classes.Context: "C",
+    asn1.Classes.Private: "P"
 }
 
 object_id_to_string_map = {
@@ -122,7 +122,7 @@ def value_to_string(tag_number, value):
         return '0x' + str(binascii.hexlify(value).upper())
     elif isinstance(value, str):
         return value
-    elif tag_number == asn1.ObjectIdentifier:
+    elif tag_number == asn1.Numbers.ObjectIdentifier:
         return object_identifier_to_string(value)
     else:
         return repr(value)
@@ -132,11 +132,11 @@ def pretty_print(input_stream, output_stream, indent=0):
     """Pretty print ASN.1 data."""
     while not input_stream.eof():
         tag = input_stream.peek()
-        if tag.typ == asn1.TypePrimitive:
+        if tag.typ == asn1.Types.Primitive:
             tag, value = input_stream.read()
             output_stream.write(' ' * indent)
             output_stream.write('[{}] {}: {}\n'.format(class_id_to_string(tag.cls), tag_id_to_string(tag.nr), value_to_string(tag.nr, value)))
-        elif tag.typ == asn1.TypeConstructed:
+        elif tag.typ == asn1.Types.Constructed:
             output_stream.write(' ' * indent)
             output_stream.write('[{}] {}\n'.format(class_id_to_string(tag.cls), tag_id_to_string(tag.nr)))
             input_stream.enter()
