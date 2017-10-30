@@ -15,13 +15,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
 import collections
 import re
 from builtins import bytes
 from builtins import int
 from builtins import range
 from builtins import str
-
 
 __version__ = "2.1.1"
 

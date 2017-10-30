@@ -1,5 +1,5 @@
 language: python
-python: '3.5'
+python: '3.6'
 sudo: false
 env:
   global:
@@ -13,6 +13,7 @@ env:
     - TOXENV=py33,codecov
     - TOXENV=py34,codecov
     - TOXENV=py35,codecov
+    - TOXENV=py36,codecov
     - TOXENV=pypy,codecov
 before_install:
   - python --version
