@@ -60,6 +60,26 @@ class TestEncoder(object):
     def test_twos_complement_boundaries(self):
         enc = asn1.Encoder()
         enc.start()
+        enc.write(0)
+        res = enc.output()
+        assert res == b'\x02\x01\x00'
+        enc = asn1.Encoder()
+        enc.start()
+        enc.write(1)
+        res = enc.output()
+        assert res == b'\x02\x01\x01'
+        enc = asn1.Encoder()
+        enc.start()
+        enc.write(-0)
+        res = enc.output()
+        assert res == b'\x02\x01\x00'
+        enc = asn1.Encoder()
+        enc.start()
+        enc.write(-1)
+        res = enc.output()
+        assert res == b'\x02\x01\xff'
+        enc = asn1.Encoder()
+        enc.start()
         enc.write(127)
         res = enc.output()
         assert res == b'\x02\x01\x7f'
@@ -68,6 +88,10 @@ class TestEncoder(object):
         res = enc.output()
         assert res == b'\x02\x02\x00\x80'
         enc.start()
+        enc.write(-127)
+        res = enc.output()
+        assert res == b'\x02\x01\x81'
+        enc.start()
         enc.write(-128)
         res = enc.output()
         assert res == b'\x02\x01\x80'
@@ -75,6 +99,30 @@ class TestEncoder(object):
         enc.write(-129)
         res = enc.output()
         assert res == b'\x02\x02\xff\x7f'
+        enc.start()
+        enc.write(32767)
+        res = enc.output()
+        assert res == b'\x02\x02\x7f\xff'
+        enc.start()
+        enc.write(32768)
+        res = enc.output()
+        assert res == b'\x02\x03\x00\x80\x00'
+        enc.start()
+        enc.write(32769)
+        res = enc.output()
+        assert res == b'\x02\x03\x00\x80\x01'
+        enc.start()
+        enc.write(-32767)
+        res = enc.output()
+        assert res == b'\x02\x02\x80\x01'
+        enc.start()
+        enc.write(-32768)
+        res = enc.output()
+        assert res == b'\x02\x02\x80\x00'
+        enc.start()
+        enc.write(-32769)
+        res = enc.output()
+        assert res == b'\x02\x03\xff\x7f\xff'
 
     def test_octet_string(self):
         enc = asn1.Encoder()
@@ -616,3 +664,48 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         assert_raises(asn1.Error, dec.read)
+
+    def test_big_negative_integer(self):
+        buf = b'\x02\x10\xff\x7f\x2b\x3a\x4d\xea\x48\x1e\x1f\x37\x7b\xa8\xbd\x7f\xb0\x16'
+        dec = asn1.Decoder()
+        dec.start(buf)
+        tag, val = dec.read()
+        assert val == -668929531791034950848739021124816874
+        assert dec.eof()
+
+class TestEncoderDecoder(object):
+    """Test suite for ASN1 Encoder and Decoder."""
+
+    def test_big_numbers(self):
+        for v in \
+        (
+            668929531791034950848739021124816874,
+            667441897913742713771034596334288035,
+            664674827807729028941298133900846368,
+            666811959353093594446621165172641478,
+        ):
+            encoder = asn1.Encoder()
+            encoder.start()
+            encoder.write(v, asn1.Numbers.Integer)
+            encoded_bytes = encoder.output()
+            decoder = asn1.Decoder()
+            decoder.start(encoded_bytes)
+            tag, value = decoder.read()
+            assert value == v
+
+    def test_big_negative_numbers(self):
+        for v in \
+        (
+            -668929531791034950848739021124816874,
+            -667441897913742713771034596334288035,
+            -664674827807729028941298133900846368,
+            -666811959353093594446621165172641478,
+        ):
+            encoder = asn1.Encoder()
+            encoder.start()
+            encoder.write(v, asn1.Numbers.Integer)
+            encoded_bytes = encoder.output()
+            decoder = asn1.Decoder()
+            decoder.start(encoded_bytes)
+            tag, value = decoder.read()
+            assert value == v

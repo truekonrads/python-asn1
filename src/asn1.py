@@ -285,14 +285,16 @@ class Encoder(object):
         values.append(value & 0xff)
         if negative:
             # create two's complement
-            for i in range(len(values)):
+            for i in range(len(values)):  # Invert bits
                 values[i] = 0xff - values[i]
-            for i in range(len(values)):
+            for i in range(len(values)):  # Add 1
                 values[i] += 1
                 if values[i] <= 0xff:
                     break
                 assert i != len(values) - 1
                 values[i] = 0x00
+        if negative and values[len(values) - 1] == 0x7f:  # Two's complement corner case
+            values.append(0xff)
         values.reverse()
         return bytes(values)
 
