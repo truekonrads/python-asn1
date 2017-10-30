@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.1.1 (2017-10-30)
+
+* Fix a bug (#9): two's complement corner case with values such as -32769. Add new test cases to test them.
+
 2.1.0 (2016-12-18)
 ------------------
 
