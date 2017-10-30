@@ -22,11 +22,12 @@ from builtins import bytes
 from builtins import int
 from builtins import range
 from builtins import str
+from enum import IntEnum
 
 __version__ = "2.1.1"
 
 
-class Numbers(object):
+class Numbers(IntEnum):
     Boolean = 0x01
     Integer = 0x02
     BitString = 0x03
@@ -43,12 +44,12 @@ class Numbers(object):
     UnicodeString = 0x1e
 
 
-class Types(object):
+class Types(IntEnum):
     Constructed = 0x20
     Primitive = 0x00
 
 
-class Classes(object):
+class Classes(IntEnum):
     Universal = 0x00
     Application = 0x40
     Context = 0x80
