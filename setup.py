@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name='asn1',
-    version='2.1.1',
+    version='2.2.0',
     license='BSD',
     description='Python-ASN1 is a simple ASN.1 encoder and decoder for Python 2.6+ and 3.3+.',
     long_description='%s\n%s' % (
