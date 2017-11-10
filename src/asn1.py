@@ -398,7 +398,7 @@ class Decoder(object):
             self.m_tag = self._read_tag()
         return self.m_tag
 
-    def read(self):  # type: () -> (Tag, any)
+    def read(self, tagnr=None):  # type: (Number) -> (Tag, any)
         """This method decodes one ASN.1 tag from the input and returns it as a
         ``(tag, value)`` tuple. ``tag`` is a 3-tuple ``(nr, typ, cls)``,
         while ``value`` is a Python object representing the ASN.1 value.
@@ -418,7 +418,9 @@ class Decoder(object):
             return None
         tag = self.peek()
         length = self._read_length()
-        value = self._read_value(tag.nr, length)
+        if tagnr is None:
+            tagnr = tag.nr
+        value = self._read_value(tagnr, length)
         self.m_tag = None
         return tag, value
 
