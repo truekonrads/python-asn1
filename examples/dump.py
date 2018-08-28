@@ -118,12 +118,12 @@ def object_identifier_to_string(identifier):
 
 
 def value_to_string(tag_number, value):
-    if isinstance(value, bytes):
+    if tag_number == asn1.Numbers.ObjectIdentifier:
+        return object_identifier_to_string(value)
+    elif isinstance(value, bytes):
         return '0x' + str(binascii.hexlify(value).upper())
     elif isinstance(value, str):
         return value
-    elif tag_number == asn1.Numbers.ObjectIdentifier:
-        return object_identifier_to_string(value)
     else:
         return repr(value)
 
